@@ -1,0 +1,31 @@
+﻿Построение начато 14.01.2017 23:01:25.
+     1>Проект "D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\VS\VS.vcxproj" в узле 2 (целевые объекты rebuild).
+     1>_PrepareForClean:
+         Файл "x64\Debug\VS.lastbuildstate" удаляется.
+       InitializeBuildStatus:
+         Обращение к "x64\Debug\VS.unsuccessfulbuild".
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\CL.exe /c /I"D:\Robot\OpenCV_3.2_build_(64)\3rdparty\ippicv\ippicv_win\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\flann\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\ml\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\calib3d\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\features2d\include" /I"C:\Users\Sergey\Desktop\opencv_contrib-3.2.0\opencv_contrib-3.2.0\modules\aruco\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\imgproc\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\videoio\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\core\include" /I"D:\Robot\OpenCV_3.2_build_(64)" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\highgui\include" /I"C:\Users\Sergey\Desktop\opencv-3.2.0\opencv-3.2.0\modules\imgcodecs\include" /Zi /nologo /W3 /WX- /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc100.pdb" /Gd /TP /errorReport:prompt ..\..\detect_markers.cpp
+         detect_markers.cpp
+       ManifestResourceCompile:
+         c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"x64\Debug\VS.exe.embed.manifest.res" x64\Debug\VS_manifest.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.exe" /INCREMENTAL /NOLOGO /LIBPATH:"D:\Robot\OpenCV_3.2_build_(64)\bin\Debug" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_aruco320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_calib3d320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_features2d320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_flann320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_ml320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_highgui320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_videoio320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgcodecs320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgproc320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_core320d.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"x64\Debug\VS.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.lib" /MACHINE:X64 x64\Debug\VS.exe.embed.manifest.res
+         x64\Debug\detect_markers.obj
+         VS.vcxproj -> D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.exe
+       Manifest:
+         Файл "x64\Debug\VS.exe.embed.manifest" удаляется.
+         c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"x64\Debug\VS.exe.embed.manifest" /manifest x64\Debug\VS.exe.intermediate.manifest
+         c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"x64\Debug\VS.exe.embed.manifest.res" x64\Debug\VS_manifest.rc 
+       LinkEmbedManifest:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.exe" /INCREMENTAL /NOLOGO /LIBPATH:"D:\Robot\OpenCV_3.2_build_(64)\bin\Debug" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_aruco320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_calib3d320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_features2d320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_flann320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_ml320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_highgui320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_videoio320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgcodecs320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgproc320d.lib" "D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_core320d.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"x64\Debug\VS.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.lib" /MACHINE:X64 x64\Debug\VS.exe.embed.manifest.res
+         x64\Debug\detect_markers.obj
+         VS.vcxproj -> D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\x64\Debug\VS.exe
+       FinalizeBuildStatus:
+         Файл "x64\Debug\VS.unsuccessfulbuild" удаляется.
+         Обращение к "x64\Debug\VS.lastbuildstate".
+     1>Построение проекта "D:\Robot\GitHub\Aruco_auto_crop_images_of_objects\VS\VS\VS.vcxproj" завершено (целевые объекты rebuild).
+
+Построение успешно завершено.
+
+Затраченное время: 00:00:03.11
