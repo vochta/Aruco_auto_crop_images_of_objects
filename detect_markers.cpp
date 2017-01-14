@@ -1,42 +1,3 @@
-/*
-By downloading, copying, installing or using the software you agree to this
-license. If you do not agree to this license, do not download, install,
-copy or use the software.
-
-                          License Agreement
-               For Open Source Computer Vision Library
-                       (3-clause BSD License)
-
-Copyright (C) 2013, OpenCV Foundation, all rights reserved.
-Third party copyrights are property of their respective owners.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-  * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
-
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
-
-  * Neither the names of the copyright holders nor the names of the contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
-
-This software is provided by the copyright holders and contributors "as is" and
-any express or implied warranties, including, but not limited to, the implied
-warranties of merchantability and fitness for a particular purpose are
-disclaimed. In no event shall copyright holders or contributors be liable for
-any direct, indirect, incidental, special, exemplary, or consequential damages
-(including, but not limited to, procurement of substitute goods or services;
-loss of use, data, or profits; or business interruption) however caused
-and on any theory of liability, whether in contract, strict liability,
-or tort (including negligence or otherwise) arising in any way out of
-the use of this software, even if advised of the possibility of such damage.
-*/
-
-
 #include <opencv2/highgui.hpp>
 #include <opencv2/aruco.hpp>
 #include <iostream>
@@ -196,10 +157,36 @@ int main(int argc, char *argv[]) {
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
 
             if(estimatePose) {
-                for(unsigned int i = 0; i < ids.size(); i++)
-                    aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i],
-                                    markerLength * 0.5f);
+             //   for(unsigned int i = 0; i < ids.size(); i++)
+             //       aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i], markerLength * 0.5f);
             }
+        }
+        
+        if (corners.size() == 2)     // the number of found markers in the corners array
+        {
+			cout << corners.size()<< endl;
+			cout << corners[0][0].x << endl;
+            vector< Point2f > marker1 = corners[0];
+            vector< Point2f > marker2 = corners[1];
+            
+            float a12_m1 = (marker1[1].y - marker1[0].y)/(marker1[1].x - marker1[0].x);
+            float a14_m1 = (marker1[3].y - marker1[0].y)/(marker1[3].x - marker1[0].x);
+            float a12_m2 = (marker2[1].y - marker2[0].y)/(marker2[1].x - marker2[0].x);
+            float a14_m2 = (marker2[3].y - marker2[0].y)/(marker2[3].x - marker2[0].x);
+            
+            float b12_m1 = marker1[0].y - marker1[0].x*a12_m1;            
+            float b14_m1 = marker1[0].y - marker1[0].x*a14_m1;
+            float b12_m2 = marker2[0].y - marker2[0].x*a12_m2;            
+            float b14_m2 = marker2[0].y - marker2[0].x*a14_m2;            
+            
+            float o2_x = (b14_m2 - b12_m1)/(a12_m1-a14_m2);
+            float o2_y = a12_m1*x_o2 + b12_m1;
+            
+            float o4_x = (b14_m1 - b12_m2)/(a12_m2-a14_m1);
+            float o4_y = a12_m2*x_o4 + b12_m2;            
+            
+            o1
+            
         }
 
         if(showRejected && rejected.size() > 0)
