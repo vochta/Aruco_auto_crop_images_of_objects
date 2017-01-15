@@ -1,5 +1,6 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/aruco.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 
 using namespace std;
@@ -166,9 +167,17 @@ int main(int argc, char *argv[]) {
         {
 			cout << corners.size()<< endl;
 			cout << corners[0][0].x << endl;
-            vector< Point2f > marker1 = corners[0];
-            vector< Point2f > marker2 = corners[1];
             
+            vector< Point2f > marker1 = corners[0];   // points corners 1, 2, 3, 4 of marker #1 (M1)
+            vector< Point2f > marker2 = corners[1];   // points corners 1, 2, 3, 4 of marker #2 (M2)
+                
+            vector <Point2f> object_rectangle;     // points O1, O2, O3, O4
+            Rect rectangle_to_crop;   // points C1, C2, C3, C4
+            
+            object_rectangle.push_back (marker1[0]);     // point O1 = corner №1 of marker №1
+
+                        
+            // BEGIN calculation of the coefficients of straight lines L12 and L14 equations:
             float a12_m1 = (marker1[1].y - marker1[0].y)/(marker1[1].x - marker1[0].x);
             float a14_m1 = (marker1[3].y - marker1[0].y)/(marker1[3].x - marker1[0].x);
             float a12_m2 = (marker2[1].y - marker2[0].y)/(marker2[1].x - marker2[0].x);
@@ -178,21 +187,55 @@ int main(int argc, char *argv[]) {
             float b14_m1 = marker1[0].y - marker1[0].x*a14_m1;
             float b12_m2 = marker2[0].y - marker2[0].x*a12_m2;            
             float b14_m2 = marker2[0].y - marker2[0].x*a14_m2;            
+
+            // END calculation of the coefficients of straight lines L12 and L14 equations:
             
-            float o2_x = (b14_m2 - b12_m1)/(a12_m1-a14_m2);
-            float o2_y = a12_m1*x_o2 + b12_m1;
+
+			Point2f temp_point;   // point var for calculations
+			temp_point.x = (b14_m2 - b12_m1)/(a12_m1-a14_m2);  
+            temp_point.y = a12_m1*temp_point.x + b12_m1;
+
+            object_rectangle.push_back (temp_point);  // this is point O2
+
+			object_rectangle.push_back(marker2[0]);     // point O3 = corner №1 of marker №2
+
+            temp_point.x = (b14_m1 - b12_m2)/(a12_m2-a14_m1);
+            temp_point.y = a12_m2*temp_point.x + b12_m2;            
             
-            float o4_x = (b14_m1 - b12_m2)/(a12_m2-a14_m1);
-            float o4_y = a12_m2*x_o4 + b12_m2;            
+			object_rectangle.push_back (temp_point);  // this is point O4
+
+			rectangle_to_crop = boundingRect (object_rectangle);
+
+/*            rectangle_to_crop[0].x = marker1[0].x;
+            rectangle_to_crop[0].y = object_rectangle[1].y;
+            rectangle_to_crop[1].x = marker2[0].x;
+            rectangle_to_crop[1].y = object_rectangle[1].y;
+            rectangle_to_crop[2].x = marker2[0].x;
+            rectangle_to_crop[2].y = object_rectangle[3].y;
+            rectangle_to_crop[3].x = marker1[0].x;
+            rectangle_to_crop[3].y = object_rectangle[3].y;
+*/
+    /*        rectangle_to_crop[0].x = std::min (object_rectangle[0].x, object_rectangle[1].x); //, std::min(object_rectangle[2].x, object_rectangle[3].x));
+    /*        rectangle_to_crop[0].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
+            rectangle_to_crop[1].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+            rectangle_to_crop[1].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
+            rectangle_to_crop[2].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+            rectangle_to_crop[2].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
+            rectangle_to_crop[3].x = min_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+            rectangle_to_crop[3].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
+      */      
+
+			cout << rectangle_to_crop << endl;
             
-            o1
-            
+            Mat croppedImage = image(rectangle_to_crop);
+            imshow("out_croped", croppedImage);
         }
 
         if(showRejected && rejected.size() > 0)
             aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
 
         imshow("out", imageCopy);
+        
         char key = (char)waitKey(waitTime);
         if(key == 27) break;
     }
