@@ -1,10 +1,19 @@
+#define WIN32_LEAN_AND_MEAN
 #include <opencv2/highgui.hpp>
 #include <opencv2/aruco.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
+#include <ws2tcpip.h>
+
 
 using namespace std;
 using namespace cv;
+
+#define DEFAULT_BUFLEN 1024
+#define DEFAULT_PORT "8000"
+
+
+
 
 namespace {
 const char* about = "Basic marker detection";
@@ -20,6 +29,10 @@ const char* keys  =
         "{dp       |       | File of marker detector parameters }"
         "{r        |       | show rejected candidates too }";
 }
+
+
+
+
 
 /**
  */
@@ -71,6 +84,26 @@ int main(int argc, char *argv[]) {
     CommandLineParser parser(argc, argv, keys);
     parser.about(about);
 
+
+	WSADATA wsaData;
+    int iResult;
+  
+    SOCKET ListenSocket = INVALID_SOCKET;
+    SOCKET ClientSocket = INVALID_SOCKET;
+
+    struct addrinfo *result = NULL;
+    struct addrinfo hints;
+
+	char recvbuf[DEFAULT_BUFLEN];
+    int recvbuflen = DEFAULT_BUFLEN;
+	bool first = false; 
+	//std::vector<uchar> stream_bytes;
+	std::vector <char> stream_bytes;
+	Mat image;
+	char prev_buf = ' ';
+
+
+
     if(argc < 2) {
         parser.printMessage();
         return 0;
@@ -120,125 +153,258 @@ int main(int argc, char *argv[]) {
     if(!video.empty()) {
         inputVideo.open(video);
         waitTime = 0;
-    } else {
-        inputVideo.open(camId);
-        waitTime = 10;
+    } 
+	else {
+//        inputVideo.open(camId);
+//        waitTime = 10;
+
+  //*********************************************************************
+
+
+
+
+
+    
+   // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2,1), &wsaData);
+    if (iResult != 0) {
+        printf("WSAStartup failed with error: %d\n", iResult);
+        return 1;
+    }
+
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = 0;//IPPROTO_TCP;
+    hints.ai_flags = AI_PASSIVE;
+
+    // Resolve the server address and port
+    iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+    if ( iResult != 0 ) {
+        printf("getaddrinfo failed with error: %d\n", iResult);
+        WSACleanup();
+        return 1;
+    }
+
+    // Create a SOCKET for connecting to server
+    ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    if (ListenSocket == INVALID_SOCKET) {
+        printf("socket failed with error: %ld\n", WSAGetLastError());
+        freeaddrinfo(result);
+        WSACleanup();
+        return 1;
+    }
+
+    // Setup the TCP listening socket
+    iResult = bind( ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+    if (iResult == SOCKET_ERROR) {
+        printf("bind failed with error: %d\n", WSAGetLastError());
+        freeaddrinfo(result);
+        closesocket(ListenSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    freeaddrinfo(result);
+
+    iResult = listen(ListenSocket, SOMAXCONN);
+    if (iResult == SOCKET_ERROR) {
+        printf("listen failed with error: %d\n", WSAGetLastError());
+        closesocket(ListenSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    // Accept a client socket
+    ClientSocket = accept(ListenSocket, NULL, NULL);
+    if (ClientSocket == INVALID_SOCKET) {
+        printf("accept failed with error: %d\n", WSAGetLastError());
+        closesocket(ListenSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    // No longer need server socket
+    closesocket(ListenSocket);	
+
+
     }
 
     double totalTime = 0;
     int totalIterations = 0;
 
-    while(inputVideo.grab()) {
-        Mat image, imageCopy;
-        inputVideo.retrieve(image);
+	iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
 
-        double tick = (double)getTickCount();
+    while(inputVideo.grab()||(iResult>0)) {
+	
+//*********************
+    //    printf("Bytes received: %d\n", iResult);
+		for (int k = 0; k<iResult; k++)  
+		{
+			if (k!=0) prev_buf = recvbuf[k-1];
+			if (((prev_buf == (char)0xff) && (recvbuf[k] ==(char)0xd8))||first == true) 
+			{
+				if (!first)	stream_bytes.push_back(prev_buf);
+				first = true;
 
-        vector< int > ids;
-        vector< vector< Point2f > > corners, rejected;
-        vector< Vec3d > rvecs, tvecs;
+				do {
+					stream_bytes.push_back(recvbuf[k]);
+					if (k!=0) prev_buf = recvbuf[k-1];
+				
+					if ((prev_buf == (char)0xff) && (recvbuf[k] == (char)0xd9))
+					{
+						image = imdecode(stream_bytes, 1);
+						if (image.empty()) printf("NULL");
+						else { 
 
-        // detect markers and estimate pose
-        aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
-        if(estimatePose && ids.size() > 0)
-            aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
-                                             tvecs);
+							imshow("image1", image);
+							waitKey(1); // Wait for a keystroke in the window
 
-        double currentTime = ((double)getTickCount() - tick) / getTickFrequency();
-        totalTime += currentTime;
-        totalIterations++;
-        if(totalIterations % 30 == 0) {
-            cout << "Detection Time = " << currentTime * 1000 << " ms "
-                 << "(Mean = " << 1000 * totalTime / double(totalIterations) << " ms)" << endl;
-        }
+							Mat imageCopy;
+					  //      inputVideo.retrieve(image);
 
-        // draw results
-        image.copyTo(imageCopy);
-        if(ids.size() > 0) {
-            aruco::drawDetectedMarkers(imageCopy, corners, ids);
+							double tick = (double)getTickCount();
 
-            if(estimatePose) {
-             //   for(unsigned int i = 0; i < ids.size(); i++)
-             //       aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i], markerLength * 0.5f);
-            }
-        }
+							vector< int > ids;
+							vector< vector< Point2f > > corners, rejected;
+							vector< Vec3d > rvecs, tvecs;
+
+							// detect markers and estimate pose
+							aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
+							if(estimatePose && ids.size() > 0)
+								aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
+																 tvecs);
+
+							double currentTime = ((double)getTickCount() - tick) / getTickFrequency();
+							totalTime += currentTime;
+							totalIterations++;
+							if(totalIterations % 30 == 0) {
+								cout << "Detection Time = " << currentTime * 1000 << " ms "
+									 << "(Mean = " << 1000 * totalTime / double(totalIterations) << " ms)" << endl;
+							}
+
+							// draw results
+							image.copyTo(imageCopy);
+							if(ids.size() > 0) {
+								aruco::drawDetectedMarkers(imageCopy, corners, ids);
+
+								if(estimatePose) {
+								 //   for(unsigned int i = 0; i < ids.size(); i++)
+								 //       aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i], markerLength * 0.5f);
+								}
+							}
         
-        if (corners.size() == 2)     // the number of found markers in the corners array
-        {
-			cout << corners.size()<< endl;
-			cout << corners[0][0].x << endl;
+							if (corners.size() == 2)     // the number of found markers in the corners array
+							{
+								cout << corners.size()<< endl;
+								cout << corners[0][0].x << endl;
             
-            vector< Point2f > marker1 = corners[0];   // points corners 1, 2, 3, 4 of marker #1 (M1)
-            vector< Point2f > marker2 = corners[1];   // points corners 1, 2, 3, 4 of marker #2 (M2)
+								vector< Point2f > marker1 = corners[0];   // points corners 1, 2, 3, 4 of marker #1 (M1)
+								vector< Point2f > marker2 = corners[1];   // points corners 1, 2, 3, 4 of marker #2 (M2)
                 
-            vector <Point2f> object_rectangle;     // points O1, O2, O3, O4
-            Rect rectangle_to_crop;   // points C1, C2, C3, C4
+								vector <Point2f> object_rectangle;     // points O1, O2, O3, O4
+								Rect rectangle_to_crop;   // points C1, C2, C3, C4
             
-            object_rectangle.push_back (marker1[0]);     // point O1 = corner №1 of marker №1
+								object_rectangle.push_back (marker1[0]);     // point O1 = corner №1 of marker №1
 
                         
-            // BEGIN calculation of the coefficients of straight lines L12 and L14 equations:
-            float a12_m1 = (marker1[1].y - marker1[0].y)/(marker1[1].x - marker1[0].x);
-            float a14_m1 = (marker1[3].y - marker1[0].y)/(marker1[3].x - marker1[0].x);
-            float a12_m2 = (marker2[1].y - marker2[0].y)/(marker2[1].x - marker2[0].x);
-            float a14_m2 = (marker2[3].y - marker2[0].y)/(marker2[3].x - marker2[0].x);
+								// BEGIN calculation of the coefficients of straight lines L12 and L14 equations:
+								float a12_m1 = (marker1[1].y - marker1[0].y)/(marker1[1].x - marker1[0].x);
+								float a14_m1 = (marker1[3].y - marker1[0].y)/(marker1[3].x - marker1[0].x);
+								float a12_m2 = (marker2[1].y - marker2[0].y)/(marker2[1].x - marker2[0].x);
+								float a14_m2 = (marker2[3].y - marker2[0].y)/(marker2[3].x - marker2[0].x);
             
-            float b12_m1 = marker1[0].y - marker1[0].x*a12_m1;            
-            float b14_m1 = marker1[0].y - marker1[0].x*a14_m1;
-            float b12_m2 = marker2[0].y - marker2[0].x*a12_m2;            
-            float b14_m2 = marker2[0].y - marker2[0].x*a14_m2;            
+								float b12_m1 = marker1[0].y - marker1[0].x*a12_m1;            
+								float b14_m1 = marker1[0].y - marker1[0].x*a14_m1;
+								float b12_m2 = marker2[0].y - marker2[0].x*a12_m2;            
+								float b14_m2 = marker2[0].y - marker2[0].x*a14_m2;            
 
-            // END calculation of the coefficients of straight lines L12 and L14 equations:
+								// END calculation of the coefficients of straight lines L12 and L14 equations:
             
 
-			Point2f temp_point;   // point var for calculations
-			temp_point.x = (b14_m2 - b12_m1)/(a12_m1-a14_m2);  
-            temp_point.y = a12_m1*temp_point.x + b12_m1;
+								Point2f temp_point;   // point var for calculations
+								temp_point.x = (b14_m2 - b12_m1)/(a12_m1-a14_m2);  
+								temp_point.y = a12_m1*temp_point.x + b12_m1;
 
-            object_rectangle.push_back (temp_point);  // this is point O2
+								object_rectangle.push_back (temp_point);  // this is point O2
 
-			object_rectangle.push_back(marker2[0]);     // point O3 = corner №1 of marker №2
+								object_rectangle.push_back(marker2[0]);     // point O3 = corner №1 of marker №2
 
-            temp_point.x = (b14_m1 - b12_m2)/(a12_m2-a14_m1);
-            temp_point.y = a12_m2*temp_point.x + b12_m2;            
+								temp_point.x = (b14_m1 - b12_m2)/(a12_m2-a14_m1);
+								temp_point.y = a12_m2*temp_point.x + b12_m2;            
             
-			object_rectangle.push_back (temp_point);  // this is point O4
+								object_rectangle.push_back (temp_point);  // this is point O4
 
-			rectangle_to_crop = boundingRect (object_rectangle);
+								rectangle_to_crop = boundingRect (object_rectangle);
 
-/*            rectangle_to_crop[0].x = marker1[0].x;
-            rectangle_to_crop[0].y = object_rectangle[1].y;
-            rectangle_to_crop[1].x = marker2[0].x;
-            rectangle_to_crop[1].y = object_rectangle[1].y;
-            rectangle_to_crop[2].x = marker2[0].x;
-            rectangle_to_crop[2].y = object_rectangle[3].y;
-            rectangle_to_crop[3].x = marker1[0].x;
-            rectangle_to_crop[3].y = object_rectangle[3].y;
-*/
-    /*        rectangle_to_crop[0].x = std::min (object_rectangle[0].x, object_rectangle[1].x); //, std::min(object_rectangle[2].x, object_rectangle[3].x));
-    /*        rectangle_to_crop[0].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
-            rectangle_to_crop[1].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
-            rectangle_to_crop[1].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
-            rectangle_to_crop[2].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
-            rectangle_to_crop[2].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
-            rectangle_to_crop[3].x = min_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
-            rectangle_to_crop[3].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
-      */      
+					/*            rectangle_to_crop[0].x = marker1[0].x;
+								rectangle_to_crop[0].y = object_rectangle[1].y;
+								rectangle_to_crop[1].x = marker2[0].x;
+								rectangle_to_crop[1].y = object_rectangle[1].y;
+								rectangle_to_crop[2].x = marker2[0].x;
+								rectangle_to_crop[2].y = object_rectangle[3].y;
+								rectangle_to_crop[3].x = marker1[0].x;
+								rectangle_to_crop[3].y = object_rectangle[3].y;
+					*/
+						/*        rectangle_to_crop[0].x = std::min (object_rectangle[0].x, object_rectangle[1].x); //, std::min(object_rectangle[2].x, object_rectangle[3].x));
+						/*        rectangle_to_crop[0].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
+								rectangle_to_crop[1].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+								rectangle_to_crop[1].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
+								rectangle_to_crop[2].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+								rectangle_to_crop[2].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
+								rectangle_to_crop[3].x = min_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+								rectangle_to_crop[3].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
+						  */      
 
-			cout << rectangle_to_crop << endl;
+								cout << rectangle_to_crop << endl;
             
-            Mat croppedImage = image(rectangle_to_crop);
-            imshow("out_croped", croppedImage);
-        }
+								Mat croppedImage = image(rectangle_to_crop);
+								imshow("out_croped", croppedImage);
+							}
 
-        if(showRejected && rejected.size() > 0)
-            aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
+							if(showRejected && rejected.size() > 0)
+								aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
 
-        imshow("out", imageCopy);
+							imshow("out", imageCopy);
         
-        char key = (char)waitKey(waitTime);
-        if(key == 27) break;
+							char key = (char)waitKey(waitTime);
+							if(key == 27) break;
+
+
+
+						
+						}
+						stream_bytes.clear();
+						first = false;
+						k--;
+							
+					}
+					k++;
+				} while ((k<iResult) && (first==true));
+			}
+		}
+	iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+
+
+//****************************************************************************
+
+
+
     }
+
+	destroyAllWindows();
+    // shutdown the connection since we're done
+    iResult = shutdown(ClientSocket, SD_SEND);
+    if (iResult == SOCKET_ERROR) {
+        printf("shutdown failed with error: %d\n", WSAGetLastError());
+        closesocket(ClientSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    // cleanup
+    closesocket(ClientSocket);
+    WSACleanup();
 
     return 0;
 }

@@ -100,7 +100,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_aruco320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_calib3d320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_features2d320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_flann320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_ml320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_highgui320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_videoio320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgcodecs320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgproc320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_core320d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_aruco320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_calib3d320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_features2d320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_flann320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_ml320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_highgui320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_videoio320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgcodecs320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_imgproc320d.lib;D:\Robot\OpenCV_3.2_build_(64)\lib\Debug\opencv_core320d.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\Robot\OpenCV_3.2_build_(64)\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ProjectReference>
