@@ -4,6 +4,9 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 #include <ws2tcpip.h>
+#include <stdio.h>
+#include <time.h>       /* time_t, struct tm, time, localtime */
+
 
 
 using namespace std;
@@ -12,6 +15,12 @@ using namespace cv;
 #define DEFAULT_BUFLEN 1024
 #define DEFAULT_PORT "8000"
 
+string object_name = "stop_sign";
+
+
+string DEFAULT_OUTPUT_FILE_NAME_BASE = object_name + "_" + "croped_image";
+
+string DEFAULT_OUTPUT_PATH_FOR_ALL_OBJECTS = "D:/Robot/GitHub/Aruco_auto_crop_images_of_objects/Auto_saved_croped_images/";
 
 
 
@@ -29,6 +38,45 @@ const char* keys  =
         "{dp       |       | File of marker detector parameters }"
         "{r        |       | show rejected candidates too }";
 }
+
+
+void my_replace(std::string& subject, const std::string& search,
+                          const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos) {
+         subject.replace(pos, search.length(), replace);
+         pos += replace.length();
+    }
+}
+
+string creat_folder_with_timestamp (string object_name) {
+	time_t rawtime;
+	struct tm * timeinfo;
+	char buffer[80];
+
+	time (&rawtime);
+	timeinfo = localtime (&rawtime);
+
+	//std:: string time_stamp = asctime(timeinfo);
+		
+	strftime(buffer,80,"%d-%m-%Y %H:%M:%S",timeinfo);
+	std::string time_stamp(buffer);
+
+	my_replace(time_stamp, ":", "-");
+	my_replace(time_stamp, " ", "_");
+
+	string string_dir_name = DEFAULT_OUTPUT_PATH_FOR_ALL_OBJECTS + "/" + (string)time_stamp;
+
+	LPCSTR dir_name = string_dir_name.c_str();
+	// printf (dir_name);
+
+
+	if (!CreateDirectoryA (dir_name, NULL)) printf ("Error creating folder");;
+
+	string path_to_folder = DEFAULT_OUTPUT_PATH_FOR_ALL_OBJECTS + (string)time_stamp + "/";
+	return path_to_folder;
+}
+
 
 
 
@@ -84,7 +132,6 @@ int main(int argc, char *argv[]) {
     CommandLineParser parser(argc, argv, keys);
     parser.about(about);
 
-
 	WSADATA wsaData;
     int iResult;
   
@@ -97,13 +144,13 @@ int main(int argc, char *argv[]) {
 	char recvbuf[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
 	bool first = false; 
-	//std::vector<uchar> stream_bytes;
 	std::vector <char> stream_bytes;
 	Mat image;
 	char prev_buf = ' ';
 
+	Mat croppedImage;
 
-
+  
     if(argc < 2) {
         parser.printMessage();
         return 0;
@@ -156,7 +203,7 @@ int main(int argc, char *argv[]) {
     } 
 	else {
 //        inputVideo.open(camId);
-//        waitTime = 10;
+          waitTime = 1;
 
   //*********************************************************************
 
@@ -234,7 +281,9 @@ int main(int argc, char *argv[]) {
     int totalIterations = 0;
 
 	iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-
+	int frame_count = 0;   // total frames recieved
+	int saved_croped_images = 0;  // total images auto croped and saved
+	string path_to_folder = creat_folder_with_timestamp("test");
     while(inputVideo.grab()||(iResult>0)) {
 	
 //*********************
@@ -256,7 +305,7 @@ int main(int argc, char *argv[]) {
 						image = imdecode(stream_bytes, 1);
 						if (image.empty()) printf("NULL");
 						else { 
-
+							frame_count+=1;   
 							imshow("image1", image);
 							waitKey(1); // Wait for a keystroke in the window
 
@@ -357,15 +406,26 @@ int main(int argc, char *argv[]) {
 						  */      
 
 								cout << rectangle_to_crop << endl;
-            
-								Mat croppedImage = image(rectangle_to_crop);
+								
+								croppedImage = image(rectangle_to_crop);
+
+								saved_croped_images +=1;
 								imshow("out_croped", croppedImage);
+								
+								// Formulate the filename
+								std::ostringstream file_name;
+								file_name << path_to_folder << DEFAULT_OUTPUT_FILE_NAME_BASE << saved_croped_images << ".jpg";
+								
+								imwrite(file_name.str(), croppedImage);
+								
+							
 							}
 
 							if(showRejected && rejected.size() > 0)
 								aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
 
 							imshow("out", imageCopy);
+							
         
 							char key = (char)waitKey(waitTime);
 							if(key == 27) break;
