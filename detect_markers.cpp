@@ -22,6 +22,8 @@ string DEFAULT_OUTPUT_FILE_NAME_BASE = object_name + "_" + "croped_image";
 
 string DEFAULT_OUTPUT_PATH_FOR_ALL_OBJECTS = "D:/Robot/GitHub/Aruco_auto_crop_images_of_objects/Auto_saved_croped_images/";
 
+uchar min_croped_image_height = 16;
+uchar min_croped_image_width = 16;
 
 
 namespace {
@@ -386,39 +388,41 @@ int main(int argc, char *argv[]) {
 
 								rectangle_to_crop = boundingRect (object_rectangle);
 
-					/*            rectangle_to_crop[0].x = marker1[0].x;
-								rectangle_to_crop[0].y = object_rectangle[1].y;
-								rectangle_to_crop[1].x = marker2[0].x;
-								rectangle_to_crop[1].y = object_rectangle[1].y;
-								rectangle_to_crop[2].x = marker2[0].x;
-								rectangle_to_crop[2].y = object_rectangle[3].y;
-								rectangle_to_crop[3].x = marker1[0].x;
-								rectangle_to_crop[3].y = object_rectangle[3].y;
-					*/
-						/*        rectangle_to_crop[0].x = std::min (object_rectangle[0].x, object_rectangle[1].x); //, std::min(object_rectangle[2].x, object_rectangle[3].x));
-						/*        rectangle_to_crop[0].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
-								rectangle_to_crop[1].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
-								rectangle_to_crop[1].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
-								rectangle_to_crop[2].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
-								rectangle_to_crop[2].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
-								rectangle_to_crop[3].x = min_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
-								rectangle_to_crop[3].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
-						  */      
+								if ((rectangle_to_crop.height >= min_croped_image_height)&&(rectangle_to_crop.width >= min_croped_image_width)) 
+								{
+						/*            rectangle_to_crop[0].x = marker1[0].x;
+									rectangle_to_crop[0].y = object_rectangle[1].y;
+									rectangle_to_crop[1].x = marker2[0].x;
+									rectangle_to_crop[1].y = object_rectangle[1].y;
+									rectangle_to_crop[2].x = marker2[0].x;
+									rectangle_to_crop[2].y = object_rectangle[3].y;
+									rectangle_to_crop[3].x = marker1[0].x;
+									rectangle_to_crop[3].y = object_rectangle[3].y;
+						*/
+							/*        rectangle_to_crop[0].x = std::min (object_rectangle[0].x, object_rectangle[1].x); //, std::min(object_rectangle[2].x, object_rectangle[3].x));
+							/*        rectangle_to_crop[0].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
+									rectangle_to_crop[1].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+									rectangle_to_crop[1].y = min_element (object_rectangle[0].y, object_rectangle[3].y);
+									rectangle_to_crop[2].x = max_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+									rectangle_to_crop[2].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
+									rectangle_to_crop[3].x = min_element (object_rectangle[0].x, object_rectangle[1].x, object_rectangle[2].x, object_rectangle[3].x);
+									rectangle_to_crop[3].y = max_element (object_rectangle[0].y, object_rectangle[3].y);
+							  */      
 
-								cout << rectangle_to_crop << endl;
+									cout << rectangle_to_crop << endl;
 								
-								croppedImage = image(rectangle_to_crop);
+									croppedImage = image(rectangle_to_crop);
 
-								saved_croped_images +=1;
-								imshow("out_croped", croppedImage);
+									saved_croped_images +=1;
+									imshow("out_croped", croppedImage);
 								
-								// Formulate the filename
-								std::ostringstream file_name;
-								file_name << path_to_folder << DEFAULT_OUTPUT_FILE_NAME_BASE << saved_croped_images << ".jpg";
+									// Formulate the filename
+									std::ostringstream file_name;
+									file_name << path_to_folder << DEFAULT_OUTPUT_FILE_NAME_BASE << saved_croped_images << ".jpg";
 								
-								imwrite(file_name.str(), croppedImage);
+									imwrite(file_name.str(), croppedImage);  // save croped image of object
 								
-							
+								}
 							}
 
 							if(showRejected && rejected.size() > 0)
